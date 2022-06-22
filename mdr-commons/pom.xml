@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>mdr-parent</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>mdr-commons</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+
+  <profiles>
+
+    <!-- build mdr-java-utils-parent ONLY IF PRESENT -->
+    <profile>
+      <id>mdr-java-utils-parent</id>
+      <activation>
+        <file>
+          <exists>mdr-java-utils-parent/pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>mdr-java-utils-parent</module>
+      </modules>
+    </profile>
+
+    <!-- build mdr-spring-test-cleaners ONLY IF PRESENT -->
+    <profile>
+      <id>mdr-spring-test-cleaners</id>
+      <activation>
+        <file>
+          <exists>mdr-spring-test-cleaners/pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>mdr-spring-test-cleaners</module>
+      </modules>
+    </profile>
+
+    <!-- build mdr-log-request-response ONLY IF PRESENT -->
+    <profile>
+      <id>mdr-log-request-response</id>
+      <activation>
+        <file>
+          <exists>mdr-log-request-response/pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>mdr-log-request-response</module>
+      </modules>
+    </profile>
+
+    <!-- build mdr-log-request-response ONLY IF PRESENT -->
+    <profile>
+      <id>mdr-log-method</id>
+      <activation>
+        <file>
+          <exists>mdr-log-method/pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>mdr-log-method</module>
+      </modules>
+    </profile>
+  </profiles>
+
+</project>

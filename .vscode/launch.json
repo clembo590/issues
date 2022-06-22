@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+               "name": "Launch LocalDemoApplication with test classpath",
+            "request": "launch",
+            "mainClass": "com.example.demo.LocalDemoApplication",
+            "projectName": "mdr-backend-spring-1-test",
+            "cwd": "${workspaceFolder}/mdr-boot-with-all-starters/mdr-backend-spring-1-parent/mdr-backend-spring-1-test"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-DemoApplication<mdr-backend-spring-1>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "mainClass": "com.example.demo.DemoApplication",
+            "projectName": "mdr-backend-spring-1",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Debug (attach)",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": 8000
+        }
+    ]
+}

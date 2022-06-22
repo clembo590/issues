@@ -1,0 +1,620 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.4.3</version>
+    <relativePath></relativePath>
+  </parent>
+
+  <groupId>com.example</groupId>
+  <artifactId>mdr-parent</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+
+  <properties>
+
+    <java.version>17</java.version>
+
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+
+    <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
+
+    <project.build.outputTimestamp>2019-10-02T08:04:00Z</project.build.outputTimestamp>
+
+    <numberOfJvmForParallelTesting>1</numberOfJvmForParallelTesting>
+    <launchDockerContainersFromJavaCode>true</launchDockerContainersFromJavaCode>
+
+    <springboot-layers-file-location>${project.build.directory}/layers/layers.xml</springboot-layers-file-location>
+    <dockerFileLocation>${project.build.directory}/Dockerfile</dockerFileLocation>
+    <skipGenerationOfLayerFileAndDockerFile>false</skipGenerationOfLayerFileAndDockerFile>
+    <allowDirtyRelease>false</allowDirtyRelease>
+
+    <UT.skip>false</UT.skip>
+    <IT.skip>false</IT.skip>
+    <existPlugin.skip>true</existPlugin.skip>
+
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>1.17.2</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <!-- SPRING BOOT BEGIN-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-properties-migrator</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-devtools</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <!-- SPRING BOOT END-->
+
+    <!-- DOCUMENTATION SWAGGER OPEN API  -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-ui</artifactId>
+      <version>1.6.6</version>
+    </dependency>
+
+    <!-- PREPROCESSING SUTFF-->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.20</version>
+      <optional>true</optional>
+    </dependency>
+    <!-- this is to allow the generation of metadata that intellij can then read for auto completion-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <!-- PREPROCESSING SUTFF END-->
+
+  </dependencies>
+
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.1.2</version>
+        <configuration>
+          <configLocation>google_checks.xml</configLocation>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>10.2</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>computeAdditionnalPropertiesWithBsh</id>
+            <goals>
+              <goal>bsh-property</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <properties>
+                <property>isSnapshot</property>
+                <property>isDirty</property>
+                <property>isPom</property>
+                <property>isTestModule</property>
+                <property>skipUnitTests</property>
+                <property>skipIntegrationTests</property>
+              </properties>
+              <source>isSnapshot = project.getVersion().endsWith("-SNAPSHOT") ? true : false;
+                isPom = project.getPackaging().equals("pom");
+                isTestModule = project.getArtifactId().endsWith("test") ? true : false;
+                skipUnitTests = !(isTestModule &amp;&amp; !${UT.skip});
+                skipIntegrationTests = !(isTestModule &amp;&amp; !${IT.skip});
+                isDirty = ${git.dirty};</source>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--this is to not allow a release build if the repo is Dirty-->
+
+      <!-- <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>checkNoReleaseBuildWithDirtyRepo</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <skip>${allowDirtyRelease}</skip>
+              <target>
+                <echo>Displaying properties values from maven ant run</echo>
+                <echo>[isSnapshot]: ${isSnapshot}</echo>
+                <echo>[skipUnitTests]: ${skipUnitTests}</echo>
+                <echo>[skipIntegrationTests]: ${skipIntegrationTests}</echo>
+
+                <echo>Displaying value of 'isDirty' property</echo>
+                <echo>[isDirty]: ${git.dirty}</echo>
+                <echo>[isPom]: ${isPom}</echo>
+
+                <fail message="DIRTY REPOSITORY!!!! NO RELEASE BUILD ALLOWED IN A DIRTY REPO!">
+                  <condition>
+                    <and>
+                      <equals arg1="${isDirty}" arg2="true"></equals>
+                      <equals arg1="${isSnapshot}" arg2="false"></equals>
+                    </and>
+                  </condition>
+                </fail>
+
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin> -->
+
+      <!-- this will show the MAVEN PROFILES that are active during the build-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-help-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>show-profiles</id>
+            <goals>
+              <goal>active-profiles</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- this is to sort/format the pom files     -->
+      <plugin>
+        <groupId>com.github.ekryd.sortpom</groupId>
+        <artifactId>sortpom-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <ignoreLineSeparators>false</ignoreLineSeparators>
+          <verifyFail>stop</verifyFail>
+          <verifyFailOn>strict</verifyFailOn>
+          <createBackupFile>false</createBackupFile>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+            <phase>verify</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- this is to check that the build is reproducible (ie that when you run mvn clean install 2 times you get the same result)-->
+      <!-- it will generate a file that can be used to compare the generated jar file. -->
+      <!-- NOTE: this only works when called directly from within the project (not in a multiModule)-->
+      <!--      <plugin>-->
+      <!--        <groupId>org.apache.maven.plugins</groupId>-->
+      <!--        <artifactId>maven-artifact-plugin</artifactId>-->
+      <!--        <version>3.1.0</version>-->
+      <!--        <executions>-->
+      <!--          <execution>-->
+      <!--            <goals>-->
+      <!--              <goal>buildinfo</goal>-->
+      <!--            </goals>-->
+      <!--            <phase>verify</phase>-->
+      <!--          </execution>-->
+      <!--        </executions>-->
+      <!--      </plugin>-->
+
+      <!-- this is mainly to check dependencies conflict test but we can use other 'rules' also.... -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <configuration>
+          <rules>
+            <banDuplicatePomDependencyVersions></banDuplicatePomDependencyVersions>
+            <dependencyConvergence></dependencyConvergence>
+            <requireReleaseDeps>
+              <message>No Snapshots Allowed when building a RELEASE!</message>
+              <onlyWhenRelease>true</onlyWhenRelease>
+            </requireReleaseDeps>
+            <RestrictImports>
+              <bannedImport>org.junit.**</bannedImport>
+              <allowedImport>org.junit.jupiter.**</allowedImport>
+            </RestrictImports>
+          </rules>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>de.skuzzle.enforcer</groupId>
+            <artifactId>restrict-imports-enforcer-rule</artifactId>
+            <version>2.0.0</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- this is a plugin that will enable to 'fail' the build if the jar has already been build and does not correspond to what is in the 'local' repo or the 'remote' repo.-->
+      <plugin>
+        <groupId>org.honton.chas</groupId>
+        <artifactId>exists-maven-plugin</artifactId>
+        <version>0.5.0</version>
+        <configuration>
+          <skip>${existPlugin.skip}</skip>
+          <failIfNotMatch>true</failIfNotMatch>
+          <cmpChecksum>true</cmpChecksum>
+          <property>weshouldnotskipanything</property>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>local</goal>
+              <goal>remote</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- this is for unit test -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>${UT.skip}</skipTests>
+          <excludes>
+            <exclude>**/*IT.java</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <testSourceDirectory>${basedir}/src/main/java</testSourceDirectory>
+              <testClassesDirectory>${basedir}/target/classes</testClassesDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- this is for integration test -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.0.0-M5</version>
+        <configuration>
+          <skipTests>${IT.skip}</skipTests>
+          <environmentVariables>
+            <!--this is to allow to launch new docker containers from a docker-->
+            <DOCKER_HOST>unix:///var/run/docker.sock</DOCKER_HOST>
+            <!-- <TESTCONTAINERS_RYUK_DISABLED>true</TESTCONTAINERS_RYUK_DISABLED> -->
+          </environmentVariables>
+          <systemPropertyVariables>
+            <launchDockerContainersFromJavaCode>${launchDockerContainersFromJavaCode}</launchDockerContainersFromJavaCode>
+          </systemPropertyVariables>
+          <forkCount>${numberOfJvmForParallelTesting}</forkCount>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>default</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <testSourceDirectory>${basedir}/src/main/java</testSourceDirectory>
+              <testClassesDirectory>${basedir}/target/classes</testClassesDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- this is to get information about the commit that was used. it generates git.properties and that file will be picked up by spring actuator-->
+      <plugin>
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <version>5.0.0</version>
+        <configuration>
+          <skipPoms>false</skipPoms>
+          <includeOnlyProperties>
+            <includeOnlyProperty>git.commit.id</includeOnlyProperty>
+            <includeOnlyProperty>git.build.version</includeOnlyProperty>
+            <includeOnlyProperty>git.commit.id.describe</includeOnlyProperty>
+            <includeOnlyProperty>git.dirty</includeOnlyProperty>
+          </includeOnlyProperties>
+          <generateGitPropertiesFile>false</generateGitPropertiesFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>gitComputeButNoFileGeneration</id>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- this is to check that the coded is formatted : you can use 'apply' instead of 'check' to actually format the code -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.11.1</version>
+        <configuration>
+          <java>
+            <googleJavaFormat>
+              <version>1.12.0</version>
+              <style>GOOGLE</style>
+            </googleJavaFormat>
+          </java>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- this will create the precommit hook to check the formatting before commit -->
+    <profile>
+      <id>CREATE_PRE_COMMIT_PROFILE</id>
+      <activation>
+        <file>
+          <missing>.git/hooks/pre-commit</missing>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.github.phillipuniverse</groupId>
+            <artifactId>githook-maven-plugin</artifactId>
+            <version>1.0.5</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>install</goal>
+                </goals>
+                <configuration>
+                  <hooks>
+                    <pre-commit>echo "Validating..."
+                      mvn --quiet com.diffplug.spotless:spotless-maven-plugin:2.11.1:check &amp;&amp; mvn --quiet com.github.ekryd.sortpom:sortpom-maven-plugin:verify</pre-commit>
+                  </hooks>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>springBootSingleJarAndBuildInfo</id>
+      <activation>
+        <file>
+          <exists>src/main/resources/application.yml</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+
+          <!-- this is to get information about the commit that was used. it generates git.properties and that file will be picked up by spring actuator-->
+          <!--          <plugin>-->
+          <!--            <groupId>io.github.git-commit-id</groupId>-->
+          <!--            <artifactId>git-commit-id-maven-plugin</artifactId>-->
+          <!--            <version>5.0.0</version>-->
+          <!--            <configuration>-->
+          <!--              <skipPoms>false</skipPoms>-->
+          <!--              <includeOnlyProperties>-->
+          <!--                <includeOnlyProperty>git.commit.id</includeOnlyProperty>-->
+          <!--                <includeOnlyProperty>git.build.version</includeOnlyProperty>-->
+          <!--                <includeOnlyProperty>git.commit.id.describe</includeOnlyProperty>-->
+          <!--                <includeOnlyProperty>git.dirty</includeOnlyProperty>-->
+          <!--              </includeOnlyProperties>-->
+          <!--              <generateGitPropertiesFile>true</generateGitPropertiesFile>-->
+          <!--            </configuration>-->
+          <!--            <executions>-->
+          <!--              <execution>-->
+          <!--                <id>generateGitProperties</id>-->
+          <!--                <goals>-->
+          <!--                  <goal>revision</goal>-->
+          <!--                </goals>-->
+          <!--                <phase>validate</phase>-->
+          <!--              </execution>-->
+          <!--            </executions>-->
+          <!--          </plugin>-->
+
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+              <!--              <finalName>app</finalName>-->
+              <!-- this removes the build.time from the build-info.properties file-->
+              <time>off</time>
+              <excludes>
+                <exclude>
+                  <groupId>org.projectlombok</groupId>
+                  <artifactId>lombok</artifactId>
+                </exclude>
+              </excludes>
+              <layers>
+                <enabled>true</enabled>
+                <configuration>${springboot-layers-file-location}</configuration>
+              </layers>
+
+            </configuration>
+            <executions>
+              <execution>
+                <!-- this is to create the "build-info.properties" file for all rest project -->
+                <id>build-info</id>
+                <goals>
+                  <goal>build-info</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>repackage</id>
+                <goals>
+                  <goal>repackage</goal>
+                </goals>
+                <configuration>
+                  <attach>false</attach>
+                  <classifier>exec</classifier>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- I use this plugin to create the layers.xml file -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.8</version>
+            <executions>
+              <execution>
+                <id>createDockerFileAndCreateSpringbootLayersFile</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <phase>validate</phase>
+                <configuration>
+                  <skip>${skipGenerationOfLayerFileAndDockerFile}</skip>
+                  <target>
+                    <!--this is just to create the file... otherwise the echoxml fails-->
+                    <echo file="${springboot-layers-file-location}">${project.groupId}</echo>
+                    <echoxml file="${springboot-layers-file-location}">
+                      <layers>
+                        <application>
+                          <into layer="spring-boot-loader">
+                            <include>org/springframework/boot/loader/**</include>
+                          </into>
+                          <into layer="application"></into>
+                        </application>
+                        <dependencies>
+                          <into layer="snapshot-dependencies">
+                            <include>*:*:*SNAPSHOT</include>
+                          </into>
+                          <into layer="private-company-dependencies">
+                            <include>${project.groupId}*|com.cbo*:*:*</include>
+                          </into>
+                          <into layer="dependencies"></into>
+                        </dependencies>
+                        <layerOrder>
+                          <layer>dependencies</layer>
+                          <layer>spring-boot-loader</layer>
+                          <layer>private-company-dependencies</layer>
+                          <layer>snapshot-dependencies</layer>
+                          <layer>application</layer>
+                        </layerOrder>
+                      </layers>
+                    </echoxml>
+                    <echo file="${dockerFileLocation}">ARG BASE_IMAGE=openjdk:16-jdk
+                      FROM $BASE_IMAGE as builder
+                      WORKDIR /app
+                      COPY target/*exec.jar /app/app.jar
+                      RUN java -Djarmode=layertools -jar /app/app.jar extract
+
+                      FROM $BASE_IMAGE
+                      # setting up the entry point
+                      ENV JAVA_OPTS="-XX:InitialRAMPercentage=50.0 -XX:MinRAMPercentage=50.0 -XX:MaxRAMPercentage=80.0"
+                      COPY entrypoint.sh /entrypoint.sh
+                      RUN chmod +x /entrypoint.sh
+                      ENTRYPOINT ["/entrypoint.sh"]
+                      #CMD ["-javaagent:/datadog.jar", "-Dspring.profiles.active=config-server", "org.springframework.boot.loader.JarLauncher"]
+                      CMD ["-Dspring.profiles.active=config-server", "org.springframework.boot.loader.JarLauncher"]
+
+                      COPY --from=builder /app/dependencies/ ./
+                      COPY --from=builder /app/spring-boot-loader ./
+                      COPY --from=builder /app/private-company-dependencies/ ./
+                      COPY --from=builder /app/snapshot-dependencies/ ./
+                      COPY --from=builder /app/application/ ./</echo>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- build mdr-commons ONLY IF PRESENT -->
+    <profile>
+      <id>mdr-commons</id>
+      <activation>
+        <file>
+          <exists>mdr-commons/pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>mdr-commons</module>
+      </modules>
+    </profile>
+
+    <!-- build mdr-commons ONLY IF PRESENT -->
+    <profile>
+      <id>mdr-boot-with-all-starters</id>
+      <activation>
+        <file>
+          <exists>mdr-boot-with-all-starters/pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>mdr-boot-with-all-starters</module>
+      </modules>
+    </profile>
+
+  </profiles>
+
+</project>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>mdr-commons</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>mdr-java-utils-parent</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+
+  <profiles>
+    <!-- build mdr-java-utils ONLY IF PRESENT -->
+    <profile>
+      <id>mdr-java-utils</id>
+      <activation>
+        <file>
+          <exists>mdr-java-utils/pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>mdr-java-utils</module>
+      </modules>
+    </profile>
+
+    <!-- build mdr-java-utils-test ONLY IF PRESENT -->
+    <profile>
+      <id>mdr-java-utils-test</id>
+      <activation>
+        <file>
+          <exists>mdr-java-utils-test/pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>mdr-java-utils-test</module>
+      </modules>
+    </profile>
+
+  </profiles>
+</project>

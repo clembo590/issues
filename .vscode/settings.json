@@ -1,0 +1,21 @@
+{
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": ".*",
+                "isAsync": true,
+                "cmd": "echo 'I run for all files.'"
+            },
+            {
+                "match": "\\.java$",
+                "cmd": "java --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED -jar /Users/cboret/code/externalTools/formatter/google-java-format-1.12.0-all-deps.jar -r ${file}"
+            },
+            {
+                "match": "pom.xml$",
+                "cmd": "mvn  com.github.ekryd.sortpom:sortpom-maven-plugin:3.0.0:sort -f ${file}"
+            },
+        ]
+    },
+    "java.import.generatesMetadataFilesAtProjectRoot": true,
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx16G -Xms1G -javaagent:\"/Users/cboret/.vscode/extensions/gabrielbb.vscode-lombok-1.0.1/server/lombok.jar\""
+}
