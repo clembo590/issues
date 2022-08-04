@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.example</groupId>
+  <artifactId>mdr-parent</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+
+  <profiles>
+    <!-- build mdr-commons ONLY IF PRESENT -->
+    <profile>
+      <id>mdr-commons</id>
+      <activation>
+        <file>
+          <exists>mdr-commons/pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>mdr-commons</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>QA</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+
+          <!-- this is to check that the coded is formatted : you can use 'apply' instead of 'check' to actually format the code -->
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <version>2.11.1</version>
+            <configuration>
+              <java>
+                <googleJavaFormat>
+                  <version>1.12.0</version>
+                  <style>GOOGLE</style>
+                </googleJavaFormat>
+              </java>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+                <phase>validate</phase>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
+
+</project>
