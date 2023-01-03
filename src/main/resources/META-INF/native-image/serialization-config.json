@@ -1,0 +1,12 @@
+{
+  "types":[
+    {
+      "name":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean$$SpringCGLIB$$0",
+      "customTargetConstructorClass":"java.lang.Object"
+    }
+  ],
+  "lambdaCapturingTypes":[
+  ],
+  "proxies":[
+  ]
+}
