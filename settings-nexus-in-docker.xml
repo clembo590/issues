@@ -1,0 +1,49 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <activeProfiles>
+    <activeProfile>nexus-in-docker</activeProfile>
+  </activeProfiles>
+
+  <profiles>
+    <profile>
+      <id>nexus-in-docker</id>
+      <!-- here I just create some properties that can be directly reused in the pom files -->
+      <properties>
+        <myRepoGroupUrl>http://localhost:8081/repository/maven-public/</myRepoGroupUrl>
+        <myRepoReleaseUrl>http://localhost:8081/repository/maven-releases/</myRepoReleaseUrl>
+        <myRepoSnapshotUrl>http://localhost:8081/repository/maven-snapshots/</myRepoSnapshotUrl>
+        <!-- this property allows to not have to declare a distributionManagement in the pom file to deploy/upload the jars -->
+        <altReleaseDeploymentRepository>my-internal-repository::${myRepoReleaseUrl}</altReleaseDeploymentRepository>
+      </properties>
+      <!-- these ARE ONLY TO DOWNLOAD THINGS (not to upload) -->
+      <repositories>
+        <repository>
+          <id>my-internal-repository</id>
+          <url>${myRepoGroupUrl}</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <!--   <mirrors>
+    <mirror>
+      <id>my-own-nexus-mirror</id>
+      <name>central-mirrored</name>
+      <url>http://localhost:8081/repository/my-internal-repository-proxy/</url>
+      <mirrorOf>*</mirrorOf>
+    </mirror>
+  </mirrors> -->
+
+  <servers>
+    <server>
+      <id>my-internal-repository</id>
+      <username>admin</username>
+      <password>admin</password>
+    </server>
+  </servers>
+
+
+
+</settings>
